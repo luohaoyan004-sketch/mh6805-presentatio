@@ -429,6 +429,7 @@ function chrome() {
   pips.hidden = n <= 1;
   renderNotes(document);
   if (popup && !popup.closed) renderNotes(popup.document);
+  if (typeof publishState === 'function') publishState();
 }
 
 const TOTAL = NOTES.reduce((a, n) => a + n.t, 0);
@@ -484,6 +485,80 @@ $('#popOut').addEventListener('click', () => {
 });
 window.addEventListener('beforeunload', () => { try { popup && popup.close(); } catch (e) {} });
 
+/* ======================= Phone remote ======================= */
+// Deck and phone talk through a public pub/sub relay (ntfy.sh): the phone posts commands,
+// the deck posts its position back. Each pairing uses a random code as the topic name.
+const RELAY = new URLSearchParams(location.search).get('relay') || 'https://ntfy.sh';
+const PUBLIC_URL = 'https://mh6805-presentatio.vercel.app';
+const CODE_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789';
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+let room = null, es = null, pubT = 0, phoneSeen = false;
+const pair = $('#pair');
+const newCode = () => Array.from({ length: 6 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
+const topic = () => 'mh6805deck-' + room;
+function remoteUrl() {
+  const local = location.protocol === 'file:' || /claude|localhost|127\.0\.0\.1/.test(location.hostname) && !new URLSearchParams(location.search).get('relay');
+  const base = local ? PUBLIC_URL : location.origin;
+  const rel = new URLSearchParams(location.search).get('relay');
+  return `${base}/remote?room=${room}` + (rel ? `&relay=${encodeURIComponent(rel)}` : '');
+}
+function setPairStatus(kind, text) {
+  const st = $('#pairStatus'); st.classList.toggle('ok', kind === 'ok'); st.classList.toggle('bad', kind === 'bad');
+  st.querySelector('span').textContent = text;
+}
+function connectRemote() {
+  if (es) return;
+  room = room || store.get('mh6805-room') || newCode();
+  store.set('mh6805-room', room); store.set('mh6805-remote', '1');
+  try { es = new EventSource(`${RELAY}/${topic()}/sse`); } catch (e) { setPairStatus('bad', 'The relay is not reachable from this page.'); return; }
+  let opened = false;
+  es.onopen = () => { opened = true; setPairStatus(phoneSeen ? 'ok' : '', phoneSeen ? 'Phone connected' : 'Waiting for your phone…'); publishState(); };
+  es.onerror = () => { if (!opened) setPairStatus('bad', `Can't reach the relay here. Use ${PUBLIC_URL.replace('https://', '')}`); };
+  es.onmessage = ev => {
+    let j, m; try { j = JSON.parse(ev.data); m = JSON.parse(j.message); } catch (e) { return; }
+    if (j.event && j.event !== 'message') return;
+    if (!m || m.t !== 'cmd') return;
+    if (!phoneSeen) { phoneSeen = true; setPairStatus('ok', 'Phone connected'); }
+    if (m.a === 'next') next();
+    else if (m.a === 'prev') prev();
+    else if (m.a === 'go') go(+m.s || 0, +m.st || 0);
+    if (m.a === 'hello') publishState(); else wake();
+  };
+}
+function disconnectRemote() { if (es) { es.close(); es = null; } phoneSeen = false; }
+function publishState() {
+  if (!es) return;
+  clearTimeout(pubT);
+  pubT = setTimeout(() => {
+    fetch(`${RELAY}/${topic()}`, { method: 'POST', body: JSON.stringify({ t: 'state', cur, step, n: N, steps: STEPS }) }).catch(() => {});
+  }, 80);
+}
+let qrLoaded = null;
+function drawQr(url) {
+  const box = $('#qr'); box.innerHTML = ''; box.classList.remove('none');
+  const draw = () => { try { new window.QRCode(box, { text: url, width: 168, height: 168, colorDark: '#0D1016', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M }); } catch (e) { box.classList.add('none'); } };
+  if (window.QRCode) return draw();
+  qrLoaded = qrLoaded || new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+  qrLoaded.then(draw, () => box.classList.add('none'));
+}
+function togglePair(force) {
+  const open = force != null ? force : pair.hidden;
+  pair.hidden = !open;
+  $('#bRemote').setAttribute('aria-pressed', open ? 'true' : 'false');
+  if (open) {
+    connectRemote();
+    $('#pairCode').textContent = room.toUpperCase();
+    const url = remoteUrl();
+    $('#pairUrl').textContent = url.replace(/^https?:\/\//, '');
+    drawQr(url);
+  }
+}
+$('#bRemote').addEventListener('click', () => togglePair());
+$('#pairClose').addEventListener('click', () => togglePair(false));
+pair.addEventListener('click', e => { if (e.target === pair) togglePair(false); });
+$('#pairNew').addEventListener('click', () => { disconnectRemote(); room = newCode(); store.set('mh6805-room', room); togglePair(true); });
+if (store.get('mh6805-remote') === '1') connectRemote();
+
 /* ======================= Theme, full screen, help ======================= */
 const root = document.documentElement;
 const effectiveDark = () => root.dataset.deck === 'dark';
@@ -517,10 +592,11 @@ function onKey(e) {
   else if (k === 'Home') { e.preventDefault(); go(0, 0); }
   else if (k === 'End') { e.preventDefault(); go(N - 1, 0); }
   else if (k === 's' || k === 'S') toggleNotes();
+  else if (k === 'r' || k === 'R') togglePair();
   else if (k === 't' || k === 'T') toggleTheme();
   else if (k === 'f' || k === 'F') toggleFull();
   else if (k === '?') toggleHelp();
-  else if (k === 'Escape') { if (!help.hidden) toggleHelp(false); else if (app.classList.contains('notes-open')) toggleNotes(false); }
+  else if (k === 'Escape') { if (!pair.hidden) togglePair(false); else if (!help.hidden) toggleHelp(false); else if (app.classList.contains('notes-open')) toggleNotes(false); }
   wake();
 }
 document.addEventListener('keydown', onKey);

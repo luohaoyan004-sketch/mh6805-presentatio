@@ -1,5 +1,6 @@
 {
   "rewrites": [
-    { "source": "/", "destination": "/dist/who-should-the-bank-call.html" }
+    { "source": "/", "destination": "/dist/who-should-the-bank-call.html" },
+    { "source": "/remote", "destination": "/dist/remote.html" }
   ]
 }

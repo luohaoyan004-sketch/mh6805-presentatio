@@ -27,3 +27,20 @@ html = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
 OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(html, encoding="utf8")
 print(OUT, f"{OUT.stat().st_size / 1024:.0f} KB")
+
+
+# ---------- phone remote (dist/remote.html) ----------
+import json, re
+titles = re.findall(r'<section class="slide[^"]*" data-steps="\d+" data-title="([^"]+)"', (SRC / "template.html").read_text(encoding="utf8"))
+assert len(titles) == 13, len(titles)
+r_html = (SRC / "remote.html").read_text(encoding="utf8")
+r_js = ("const TITLES = " + json.dumps(titles, ensure_ascii=False) + ";\n"
+        + (SRC / "notes.js").read_text(encoding="utf8") + "\n" + (SRC / "remote.js").read_text(encoding="utf8"))
+r_html = r_html.replace("/*{{CSS}}*/", (SRC / "remote.css").read_text(encoding="utf8")).replace("/*{{JS}}*/", r_js)
+r_html = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+          '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+          '<meta name="apple-mobile-web-app-capable" content="yes">\n'
+          '</head>\n<body>\n' + r_html + '\n</body>\n</html>\n')
+R_OUT = OUT.parent / "remote.html"
+R_OUT.write_text(r_html, encoding="utf8")
+print(R_OUT, f"{R_OUT.stat().st_size / 1024:.0f} KB")

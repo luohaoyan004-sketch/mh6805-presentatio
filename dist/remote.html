@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<title>Deck Remote</title>
+<meta name="theme-color" content="#E7EAF0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..650&family=Geist+Mono:wght@400..600&display=swap">
+<style>
+/* Layout: a one-column phone controller; the two big buttons sit in the thumb zone at the bottom,
+   the current slide and the line to say stay at the top, the slide list scrolls between them. */
+:root {
+  --bg: #E7EAF0; --ink: #0D1016; --ink-2: #444E61; --ink-3: #5E6779; --hair: rgba(20, 30, 55, .12);
+  --glass: rgba(255, 255, 255, .55); --glass-2: rgba(255, 255, 255, .78); --rim: rgba(255, 255, 255, .95);
+  --shadow: 0 18px 40px -24px rgba(30, 45, 80, .38), 0 2px 6px -2px rgba(30, 45, 80, .12);
+  --track: rgba(20, 30, 55, .07);
+  --ok: #0f9466; --warn: #d4511f; --accent: #0D1016;
+  --field-a: rgba(42, 120, 214, .22); --field-b: rgba(212, 81, 31, .14); --field-c: rgba(15, 148, 102, .16);
+  --f-sans: "Geist", -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "Geist Mono", "SF Mono", ui-monospace, Menlo, monospace;
+  --pad-h: 156px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0A0C11; --ink: #EDF0F6; --ink-2: #A9B0BF; --ink-3: #7C8496; --hair: rgba(220, 228, 245, .11);
+    --glass: rgba(255, 255, 255, .05); --glass-2: rgba(255, 255, 255, .09); --rim: rgba(255, 255, 255, .22);
+    --shadow: 0 18px 40px -24px rgba(0, 0, 0, .8); --track: rgba(255, 255, 255, .07);
+    --ok: #1fa77a; --warn: #e0703a; --accent: #EDF0F6;
+    --field-a: rgba(77, 143, 230, .22); --field-b: rgba(224, 112, 58, .14); --field-c: rgba(31, 167, 122, .16);
+    color-scheme: dark;
+  }
+}
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-sans); -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
+}
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.bg { position: fixed; inset: 0; overflow: hidden; z-index: -1; }
+.bg i { position: absolute; border-radius: 50%; width: 110vmax; height: 110vmax; }
+.bg .fa { left: -50vmax; top: -60vmax; background: radial-gradient(closest-side, var(--field-a), transparent); }
+.bg .fb { right: -60vmax; top: 10vmax; background: radial-gradient(closest-side, var(--field-b), transparent); }
+.bg .fc { left: -20vmax; bottom: -70vmax; background: radial-gradient(closest-side, var(--field-c), transparent); }
+
+.glass {
+  border-radius: 24px; background: var(--glass);
+  backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--hair), inset 0 1px 0 var(--rim);
+}
+.label { font-family: var(--f-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.eyebrow { font-family: var(--f-mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 0; }
+
+/* ---------- join ---------- */
+.join {
+  min-height: 100dvh; display: grid; align-content: center; gap: 16px;
+  padding-block: max(32px, env(safe-area-inset-top)) max(32px, env(safe-area-inset-bottom));
+  padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right));
+  width: 100%; max-width: 520px; margin: 0 auto;
+}
+.join > * { min-width: 0; }
+.join h1 { margin: 0; font-size: 34px; line-height: 1.1; letter-spacing: -.03em; }
+.join .lead { margin: 0; font-size: 17px; line-height: 1.5; color: var(--ink-2); }
+.joinform { display: grid; gap: 10px; margin-top: 8px; }
+.joinform input {
+  width: 100%; min-width: 0;
+  font: 600 30px/1 var(--f-mono); letter-spacing: .18em; text-transform: uppercase; text-align: center;
+  padding: 16px 12px; border-radius: 18px; border: 0; color: var(--ink);
+  background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--hair);
+}
+.joinform input:focus { outline: 2px solid var(--ink-2); outline-offset: 2px; }
+.primary {
+  font: 600 18px/1 var(--f-sans); padding: 18px; border-radius: 18px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--bg);
+}
+.primary:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 3px; }
+
+/* ---------- remote ---------- */
+.remote {
+  max-width: 560px; margin: 0 auto; display: grid; gap: 14px;
+  padding-top: max(14px, env(safe-area-inset-top));
+  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: calc(var(--pad-h) + env(safe-area-inset-bottom) + 12px);
+}
+.top { display: flex; justify-content: space-between; align-items: center; padding: 4px 2px; }
+.status { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-2); }
+.status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.status.ok i { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in oklab, var(--ok) 22%, transparent); }
+.status.bad i { background: var(--warn); }
+.room { font-size: 13px; letter-spacing: .12em; color: var(--ink-3); padding: 6px 10px; border-radius: 999px; background: var(--track); }
+
+.now { padding: 18px 20px 18px; display: grid; gap: 6px; position: sticky; top: max(8px, env(safe-area-inset-top)); z-index: 3; background: var(--glass-2); }
+.now-row { display: flex; justify-content: space-between; align-items: center; }
+.count { font-size: 15px; color: var(--ink-3); }
+.count b { font-size: 26px; font-weight: 600; color: var(--ink); letter-spacing: -.02em; }
+.pips { display: flex; gap: 6px; }
+.pips i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); opacity: .35; transition: opacity .25s, transform .25s; }
+.pips i.on { opacity: 1; background: var(--ink); }
+.pips i.cur { transform: scale(1.35); }
+.now h1 { margin: 0; font-size: 24px; line-height: 1.2; letter-spacing: -.02em; text-wrap: balance; }
+.stepline { margin: 0; font-size: 14px; color: var(--ink-3); }
+
+.script { padding: 16px 20px 18px; display: grid; gap: 8px; }
+.script p { margin: 0; font-size: 17px; line-height: 1.55; }
+.script .cue { font-size: 14px; color: var(--ink-3); }
+.script .cue:empty { display: none; }
+
+.list { display: grid; gap: 8px; margin-top: 4px; }
+.list .label { padding: 0 4px; }
+.list ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.list button {
+  width: 100%; display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: baseline; text-align: left;
+  padding: 13px 14px; border: 0; border-radius: 16px; cursor: pointer; color: var(--ink-2);
+  background: var(--track); font: 400 16px/1.35 var(--f-sans); transition: background .2s, color .2s;
+}
+.list button .n { font-family: var(--f-mono); font-size: 13px; color: var(--ink-3); }
+.list button[aria-current="true"] { background: var(--glass-2); color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1px var(--hair), var(--shadow); }
+.list button:active { transform: scale(.99); }
+.list button:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; }
+
+.pad {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px;
+  padding: 12px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: linear-gradient(to top, var(--bg) 55%, color-mix(in oklab, var(--bg) 0%, transparent));
+}
+.btn {
+  height: calc(var(--pad-h) - 40px); border: 0; border-radius: 26px; cursor: pointer; touch-action: manipulation;
+  display: grid; place-items: center; align-content: center; gap: 6px;
+  font: 600 17px/1 var(--f-sans); color: var(--ink);
+  background: var(--glass-2); backdrop-filter: blur(22px) saturate(1.6); -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  box-shadow: var(--shadow), inset 0 0 0 1px var(--hair), inset 0 1px 0 var(--rim);
+  transition: transform .12s, filter .12s;
+}
+.btn svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.btn.next { background: var(--accent); color: var(--bg); }
+.btn:active { transform: scale(.96); filter: brightness(.95); }
+.btn:disabled { opacity: .4; }
+.btn:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { * { transition-duration: .01ms !important; } }
+.joinform input::placeholder { color: var(--ink-3); opacity: .6; letter-spacing: .18em; }
+
+</style>
+
+<div class="bg" aria-hidden="true"><i class="fa"></i><i class="fb"></i><i class="fc"></i></div>
+
+<!-- pairing: shown until a room code is known -->
+<main class="join" id="join" hidden>
+  <p class="eyebrow">MH6805 · Remote</p>
+  <h1>Connect to the deck</h1>
+  <p class="lead">On the presentation computer press <b>R</b>, then scan the code or type it here.</p>
+  <form id="joinForm" class="joinform" autocomplete="off">
+    <label for="code" class="label">Pairing code</label>
+    <input id="code" inputmode="text" autocapitalize="none" spellcheck="false" maxlength="6" placeholder="K7M2QX">
+    <button type="submit" class="primary">Connect</button>
+  </form>
+</main>
+
+<!-- the remote itself -->
+<main class="remote" id="remote" hidden>
+  <header class="top">
+    <span class="status" id="status"><i></i><span>Connecting…</span></span>
+    <span class="room mono" id="room"></span>
+  </header>
+
+  <section class="now glass" aria-live="polite">
+    <div class="now-row">
+      <span class="count mono"><b id="nowN">--</b> / <span id="total">13</span></span>
+      <span class="pips" id="pips"></span>
+    </div>
+    <h1 id="nowTitle">Waiting for the deck…</h1>
+    <p class="stepline" id="stepline">&nbsp;</p>
+  </section>
+
+  <section class="script glass">
+    <span class="label">Say now</span>
+    <p id="say">Open the deck on the presentation computer.</p>
+    <p class="cue" id="cue"></p>
+  </section>
+
+  <section class="list">
+    <span class="label">Jump to slide</span>
+    <ol id="slides"></ol>
+  </section>
+
+  <nav class="pad" aria-label="Move through the deck">
+    <button type="button" class="btn prev" id="prev" aria-label="Back one step">
+      <svg viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg><span>Back</span>
+    </button>
+    <button type="button" class="btn next" id="next" aria-label="Next step">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5.5 12.5 12 19l6.5-6.5"/></svg><span>Next</span>
+    </button>
+  </nav>
+</main>
+
+<script>
+const TITLES = ["Who should the bank call?", "A model can be 88% accurate and still find no one", "We only use what the bank knows before dialling", "One shared framework, four questions", "Nine models from three families", "The winner changes with the question", "Neural networks beat the baselines, not the forest", "Call 10% of customers, reach 45% of subscribers", "What XGBoost has learned to look for", "Call duration would help, but it arrives too late", "Take XGBoost forward, and let the budget decide", "What this evaluation can't tell us yet", "Thank you"];
+// Speaker script. Each slide: target seconds, and one paragraph per step (step k is spoken after the k-th press of →).
+const NOTES = [
+  { t: 20, p: [
+    "Hello everyone. Our project asks a simple business question: when a bank runs a phone campaign, who should it call first? We compared nine machine-learning models on real telemarketing data to find out."
+  ]},
+  { t: 50, p: [
+    "The data comes from a Portuguese bank’s phone campaigns. Out of 45,211 customers, only 11.7 percent subscribed to a term deposit. Those are the solid dots here.",
+    "Now imagine a model that simply predicts “no” for every customer. Its accuracy is 88.3 percent, which sounds excellent. But it finds zero subscribers, and subscribers are the only thing the bank cares about. So in this project we don’t judge models by accuracy. We judge them by how well they rank likely subscribers, and how many they find within a realistic calling budget."
+  ]},
+  { t: 55, p: [
+    "Each record has 16 inputs: the customer’s profile, account and loan details, contact information, and history from earlier campaigns. Everything in this panel is known before the bank picks up the phone. The dataset also records call duration, and it’s by far the strongest predictor.",
+    "But look where it sits on the timeline. Duration only exists after the call has ended, and the bank has to decide whom to call before dialling. Using it would let the outcome leak into the prediction, so we removed it from every main model. We also recoded pdays equal to minus one, which means “never contacted”, as its own flag instead of treating it as a number of days."
+  ]},
+  { t: 60, p: [
+    "To compare nine models fairly, they all shared one framework. A stratified 80/20 split gave about 36,000 training records and 9,043 test records, with 1,058 subscribers in the test set. Hyperparameters were chosen by five-fold cross-validation using average precision, and each decision threshold came from training predictions only, never from the test set.",
+    "We then asked four questions. Does the model rank subscribers above everyone else? That’s average precision and ROC AUC. Once we draw a line, are the yes-or-no calls good? That’s precision, recall and F1. Are the probabilities themselves accurate? That’s the Brier score. And the business question: if the bank can only call its top 10 or 20 percent, what share of all subscribers does it reach? We call that capture."
+  ]},
+  { t: 50, p: [
+    "We tested nine models in three families. In blue, the traditional baselines: logistic regression, a calibrated linear SVM, and k-nearest neighbours. In orange, random forest and two neural networks: a multilayer perceptron, and a TabTransformer, which uses attention to learn how the categorical fields relate to each other. In green, boosting: AdaBoost, XGBoost and CatBoost, which build trees one after another, each correcting the last. These colours stay the same for the rest of the talk."
+  ]},
+  { t: 65, p: [
+    "Here are the test results, starting with average precision, our main ranking measure. Tree ensembles take the top three places, and XGBoost leads at 0.47, against 0.41 for logistic regression.",
+    "Switch to F1, and CatBoost moves into first place.",
+    "On recall, random forest wins. It finds 584 of the 1,058 subscribers, but it also flags 729 customers who don’t subscribe.",
+    "On precision, the calibrated SVM comes out on top. It is the most selective, but it misses more subscribers.",
+    "And with a 20 percent calling budget, CatBoost captures the largest share. So there is no single best model. The right choice depends on what the bank wants to optimise."
+  ]},
+  { t: 45, p: [
+    "You might expect the neural networks to win. They did beat all three traditional baselines, but neither beat random forest.",
+    "To check this wasn’t noise, we bootstrapped the test predictions. For both neural networks, the whole 95 percent interval of the difference from random forest sits below zero. Between the two neural networks the interval crosses zero, so there is no clear winner there. One caveat: each neural model had only four tuning candidates, so this is about these settings, not neural networks in general."
+  ]},
+  { t: 60, p: [
+    "Now the result that matters most to a bank. Each dot is one of the 1,058 subscribers in our test set.",
+    "If the bank calls 10 percent of customers at random, that’s 904 calls, and it reaches about 106 of them.",
+    "If it calls the top 10 percent ranked by XGBoost, it reaches 475. That’s 45 percent of all subscribers, about four and a half times better than random, with exactly the same number of calls.",
+    "With a 20 percent budget, XGBoost reaches about 63 percent. Capture here means the share of all subscribers on the call list, not the share of called customers who say yes."
+  ]},
+  { t: 50, p: [
+    "So what is XGBoost looking for? This SHAP plot shows each feature’s contribution for every test customer. Red means a high value, and points to the right push the prediction towards subscribing.",
+    "A successful outcome in a previous campaign is the strongest push towards yes.",
+    "An unknown contact method pushes the prediction down.",
+    "And customers who have already been called many times in this campaign are less likely to subscribe. These are associations, not causes. Less interested customers may simply get more calls."
+  ]},
+  { t: 50, p: [
+    "Remember the feature we removed. Here is XGBoost without call duration.",
+    "Now switch it on. Average precision jumps from 0.47 to 0.62, and capture in the top 20 percent rises from 63 to 82 percent. It’s tempting.",
+    "But duration is only known once the call has ended, so it can’t help decide whom to call. That’s why every result you’ve seen today excludes it. A model that looks better on paper is no use if its inputs don’t exist at decision time."
+  ]},
+  { t: 40, p: [
+    "So our recommendation: take XGBoost forward for further testing. It had the best ranking and the best capture at a 10 percent budget. If the bank can call 20 percent of customers, CatBoost is a close alternative. And if missing a subscriber is very costly, random forest finds the most. In practice, with a fixed calling capacity, the bank should call down a ranked list rather than use one probability cut-off. And to maximise profit, the rule needs call costs and deposit value."
+  ]},
+  { t: 40, p: [
+    "We should be clear about the limits. We used one dataset and one random split, and earlier versions of the project had already looked at the test set. Tuning budgets differed, and we didn’t repeat runs across seeds. The gap between XGBoost and CatBoost isn’t decisive. And predicting who subscribes is not the same as proving that a call causes a subscription. The next step is to test the shortlist on a fresh, later campaign."
+  ]},
+  { t: 15, p: [
+    "To sum up: the best model depends on the bank’s goal, and a good ranking can reach almost half of all subscribers with a tenth of the calls. Thank you, we’re happy to take questions."
+  ]}
+];
+
+(() => {
+'use strict';
+// TITLES and NOTES are injected by build.py from the deck's own template and script.
+const $ = s => document.querySelector(s);
+const qs = new URLSearchParams(location.search);
+const RELAY = qs.get('relay') || 'https://ntfy.sh';
+const pad2 = n => String(n).padStart(2, '0');
+const N = TITLES.length;
+let room = (qs.get('room') || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+let es = null, state = null, lastSeen = 0, helloT = 0;
+
+/* ---------- join ---------- */
+if (!room) {
+  $('#join').hidden = false;
+  $('#joinForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const c = $('#code').value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (c.length < 4) { $('#code').focus(); return; }
+    const u = new URL(location.href); u.searchParams.set('room', c);
+    history.replaceState(null, '', u); room = c; start();
+  });
+} else start();
+
+/* ---------- remote ---------- */
+function start() {
+  $('#join').hidden = true; $('#remote').hidden = false;
+  $('#room').textContent = room.toUpperCase();
+  $('#total').textContent = N;
+  $('#slides').innerHTML = TITLES.map((t, i) => `<li><button type="button" data-s="${i}"><span class="n">${pad2(i + 1)}</span><span>${t}</span></button></li>`).join('');
+  $('#slides').addEventListener('click', e => { const b = e.target.closest('button[data-s]'); if (b) { send({ a: 'go', s: +b.dataset.s, st: 0 }, +b.dataset.s, 0); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
+  $('#prev').addEventListener('click', () => send({ a: 'prev' }, ...step(-1)));
+  $('#next').addEventListener('click', () => send({ a: 'next' }, ...step(1)));
+  connect();
+  setInterval(() => { if (state && Date.now() - lastSeen > 45000) setStatus('', 'Deck quiet. Tap a button to check.'); }, 5000);
+}
+
+function connect() {
+  setStatus('', 'Connecting…');
+  es = new EventSource(`${RELAY}/mh6805deck-${room}/sse`);
+  es.onopen = () => { setStatus('', 'Looking for the deck…'); hello(); };
+  es.onerror = () => setStatus('bad', 'Connection lost. Retrying…');
+  es.onmessage = ev => {
+    let j, m; try { j = JSON.parse(ev.data); m = JSON.parse(j.message); } catch (e) { return; }
+    if (j.event && j.event !== 'message') return;
+    if (!m || m.t !== 'state') return;
+    clearTimeout(helloT);
+    state = m; lastSeen = Date.now();
+    setStatus('ok', 'Connected to the deck');
+    render();
+  };
+}
+function hello() {
+  post({ t: 'cmd', a: 'hello' });
+  clearTimeout(helloT);
+  helloT = setTimeout(() => { if (!state) setStatus('bad', 'No deck found. Press R on the deck and check the code.'); }, 4000);
+}
+function post(msg) { return fetch(`${RELAY}/mh6805deck-${room}`, { method: 'POST', body: JSON.stringify(msg) }).catch(() => setStatus('bad', 'Could not send. Check the connection.')); }
+
+// predicted position, so the phone answers instantly; the deck's own report then confirms it
+function step(d) {
+  if (!state) return [null, null];
+  let { cur, step: st, steps } = state;
+  if (d > 0) { if (st < steps[cur] - 1) st++; else if (cur < N - 1) { cur++; st = 0; } }
+  else { if (st > 0) st--; else if (cur > 0) { cur--; st = steps[cur] - 1; } }
+  return [cur, st];
+}
+function send(cmd, cur, st) {
+  post(Object.assign({ t: 'cmd' }, cmd));
+  try { navigator.vibrate && navigator.vibrate(8); } catch (e) {}
+  if (state && cur != null) { state = Object.assign({}, state, { cur, step: st }); render(); }
+  keepAwake();
+}
+
+function render() {
+  const { cur, step: st, steps } = state;
+  const n = steps[cur] || 1;
+  $('#nowN').textContent = pad2(cur + 1);
+  $('#nowTitle').textContent = TITLES[cur];
+  $('#pips').innerHTML = n > 1 ? Array.from({ length: n }, (_, i) => `<i class="${i <= st ? 'on' : ''}${i === st ? ' cur' : ''}"></i>`).join('') : '';
+  $('#stepline').textContent = n > 1 ? `Step ${st + 1} of ${n}` : 'Single step';
+  const p = NOTES[cur].p;
+  $('#say').textContent = p[Math.min(st, p.length - 1)];
+  $('#cue').textContent = st < n - 1 ? `Next press reveals step ${st + 2}.` : (cur < N - 1 ? `Next press goes to: ${TITLES[cur + 1]}` : 'Last slide.');
+  $('#prev').disabled = cur === 0 && st === 0;
+  $('#next').disabled = cur === N - 1 && st === n - 1;
+  document.querySelectorAll('#slides button').forEach((b, i) => b.setAttribute('aria-current', i === cur ? 'true' : 'false'));
+}
+function setStatus(kind, text) {
+  const s = $('#status'); s.classList.toggle('ok', kind === 'ok'); s.classList.toggle('bad', kind === 'bad');
+  s.querySelector('span').textContent = text;
+}
+
+// keep the phone screen on while presenting (where the browser allows it)
+let lock = null;
+async function keepAwake() { try { if (!lock && navigator.wakeLock) { lock = await navigator.wakeLock.request('screen'); lock.addEventListener('release', () => { lock = null; }); } } catch (e) {} }
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { if (lock === null && state) keepAwake(); if (es && room) hello(); } });
+})();
+
+</script>
+
+</body>
+</html>
