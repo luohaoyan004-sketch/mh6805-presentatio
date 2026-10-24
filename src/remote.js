@@ -49,12 +49,22 @@ function connect() {
     render();
   };
 }
+let tries = 0;
 function hello() {
   post({ t: 'cmd', a: 'hello' });
   clearTimeout(helloT);
-  helloT = setTimeout(() => { if (!state) setStatus('bad', 'No deck found. Press R on the deck and check the code.'); }, 4000);
+  helloT = setTimeout(() => {
+    if (state) return;
+    tries++;
+    setStatus('bad', `No reply from the deck yet (code ${room.toUpperCase()}). Is its R panel showing this code? Retrying…`);
+    hello();
+  }, 3500);
 }
-function post(msg) { return fetch(`${RELAY}/mh6805deck-${room}`, { method: 'POST', body: JSON.stringify(msg) }).catch(() => setStatus('bad', 'Could not send. Check the connection.')); }
+function post(msg) {
+  return fetch(`${RELAY}/mh6805deck-${room}`, { method: 'POST', body: JSON.stringify(msg) })
+    .then(r => { if (!r.ok) setStatus('bad', `Relay refused the message (HTTP ${r.status}).`); })
+    .catch(() => setStatus('bad', 'This phone cannot send to the relay.'));
+}
 
 // predicted position, so the phone answers instantly; the deck's own report then confirms it
 function step(d) {

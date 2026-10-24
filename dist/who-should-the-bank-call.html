@@ -1524,7 +1524,7 @@ function connectRemote() {
   try { es = new EventSource(`${RELAY}/${topic()}/sse`); } catch (e) { setPairStatus('bad', 'The relay is not reachable from this page.'); return; }
   let opened = false;
   es.onopen = () => { opened = true; setPairStatus(phoneSeen ? 'ok' : '', phoneSeen ? 'Phone connected' : 'Waiting for your phone…'); publishState(); };
-  es.onerror = () => { if (!opened) setPairStatus('bad', `Can't reach the relay here. Use ${PUBLIC_URL.replace('https://', '')}`); };
+  es.onerror = () => { setPairStatus('bad', opened ? 'Relay connection dropped. Retrying…' : (location.hostname.endsWith('vercel.app') ? 'This computer cannot reach the relay (network or firewall).' : `Can't reach the relay here. Use ${PUBLIC_URL.replace('https://', '')}`)); };
   es.onmessage = ev => {
     let j, m; try { j = JSON.parse(ev.data); m = JSON.parse(j.message); } catch (e) { return; }
     if (j.event && j.event !== 'message') return;
@@ -1541,7 +1541,9 @@ function publishState() {
   if (!es) return;
   clearTimeout(pubT);
   pubT = setTimeout(() => {
-    fetch(`${RELAY}/${topic()}`, { method: 'POST', body: JSON.stringify({ t: 'state', cur, step, n: N, steps: STEPS }) }).catch(() => {});
+    fetch(`${RELAY}/${topic()}`, { method: 'POST', body: JSON.stringify({ t: 'state', cur, step, n: N, steps: STEPS }) })
+      .then(r => { if (!r.ok) setPairStatus('bad', `Relay refused the update (HTTP ${r.status}).`); })
+      .catch(() => setPairStatus('bad', 'This computer cannot send to the relay (network or firewall).'));
   }, 80);
 }
 let qrLoaded = null;
@@ -1569,6 +1571,7 @@ $('#pairClose').addEventListener('click', () => togglePair(false));
 pair.addEventListener('click', e => { if (e.target === pair) togglePair(false); });
 $('#pairNew').addEventListener('click', () => { disconnectRemote(); room = newCode(); store.set('mh6805-room', room); togglePair(true); });
 if (store.get('mh6805-remote') === '1') connectRemote();
+setInterval(() => { if (es && es.readyState === 1) publishState(); }, 15000);
 
 /* ======================= Theme, full screen, help ======================= */
 const root = document.documentElement;
