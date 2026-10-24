@@ -94,7 +94,9 @@ body {
 .status i { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
 .status.ok i { background: var(--ok); box-shadow: 0 0 0 4px color-mix(in oklab, var(--ok) 22%, transparent); }
 .status.bad i { background: var(--warn); }
-.room { font-size: 13px; letter-spacing: .12em; color: var(--ink-3); padding: 6px 10px; border-radius: 999px; background: var(--track); }
+.room { display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer; font-size: 13px; letter-spacing: .12em; color: var(--ink-2); padding: 7px 8px 7px 12px; border-radius: 999px; background: var(--track); }
+.room .chg { font-family: var(--f-sans); letter-spacing: 0; font-size: 13px; font-weight: 600; color: var(--ink); padding: 3px 9px; border-radius: 999px; background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--hair); }
+.room:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; }
 
 .now { padding: 18px 20px 18px; display: grid; gap: 6px; position: sticky; top: max(8px, env(safe-area-inset-top)); z-index: 3; background: var(--glass-2); }
 .now-row { display: flex; justify-content: space-between; align-items: center; }
@@ -167,7 +169,7 @@ body {
 <main class="remote" id="remote" hidden>
   <header class="top">
     <span class="status" id="status"><i></i><span>Connecting…</span></span>
-    <span class="room mono" id="room"></span>
+    <button type="button" class="room mono" id="room" aria-label="Change pairing code"><span id="roomCode"></span><span class="chg">Change</span></button>
   </header>
 
   <section class="now glass" aria-live="polite">
@@ -273,27 +275,37 @@ let room = (qs.get('room') || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 let es = null, state = null, lastSeen = 0, helloT = 0;
 
 /* ---------- join ---------- */
-if (!room) {
-  $('#join').hidden = false;
-  $('#joinForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const c = $('#code').value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (c.length < 4) { $('#code').focus(); return; }
-    const u = new URL(location.href); u.searchParams.set('room', c);
-    history.replaceState(null, '', u); room = c; start();
-  });
-} else start();
+let started = false;
+$('#joinForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const c = $('#code').value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (c.length !== 6) { $('#code').focus(); $('#code').select(); return; }
+  const u = new URL(location.href); u.searchParams.set('room', c);
+  history.replaceState(null, '', u); room = c; start();
+});
+function showJoin() {
+  if (es) { es.close(); es = null; }
+  clearTimeout(helloT); state = null;
+  $('#remote').hidden = true; $('#join').hidden = false;
+  const u = new URL(location.href); u.searchParams.delete('room'); history.replaceState(null, '', u);
+  const inp = $('#code'); inp.value = room.toUpperCase(); inp.focus(); inp.select();
+}
+if (!room) $('#join').hidden = false; else start();
 
 /* ---------- remote ---------- */
 function start() {
   $('#join').hidden = true; $('#remote').hidden = false;
-  $('#room').textContent = room.toUpperCase();
+  $('#roomCode').textContent = room.toUpperCase();
   $('#total').textContent = N;
+  $('#nowN').textContent = '--'; $('#nowTitle').textContent = 'Waiting for the deck…'; $('#pips').innerHTML = ''; $('#stepline').innerHTML = '&nbsp;';
+  connect();
+  if (started) return;
+  started = true;
+  $('#room').addEventListener('click', showJoin);
   $('#slides').innerHTML = TITLES.map((t, i) => `<li><button type="button" data-s="${i}"><span class="n">${pad2(i + 1)}</span><span>${t}</span></button></li>`).join('');
   $('#slides').addEventListener('click', e => { const b = e.target.closest('button[data-s]'); if (b) { send({ a: 'go', s: +b.dataset.s, st: 0 }, +b.dataset.s, 0); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
   $('#prev').addEventListener('click', () => send({ a: 'prev' }, ...step(-1)));
   $('#next').addEventListener('click', () => send({ a: 'next' }, ...step(1)));
-  connect();
   setInterval(() => { if (state && Date.now() - lastSeen > 45000) setStatus('', 'Deck quiet. Tap a button to check.'); }, 5000);
 }
 
@@ -319,7 +331,7 @@ function hello() {
   helloT = setTimeout(() => {
     if (state) return;
     tries++;
-    setStatus('bad', `No reply from the deck yet (code ${room.toUpperCase()}). Is its R panel showing this code? Retrying…`);
+    setStatus('bad', `No deck with code ${room.toUpperCase()} yet. Wrong code? Tap Change.`);
     hello();
   }, 3500);
 }

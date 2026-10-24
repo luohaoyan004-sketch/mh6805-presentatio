@@ -10,27 +10,37 @@ let room = (qs.get('room') || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 let es = null, state = null, lastSeen = 0, helloT = 0;
 
 /* ---------- join ---------- */
-if (!room) {
-  $('#join').hidden = false;
-  $('#joinForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const c = $('#code').value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (c.length < 4) { $('#code').focus(); return; }
-    const u = new URL(location.href); u.searchParams.set('room', c);
-    history.replaceState(null, '', u); room = c; start();
-  });
-} else start();
+let started = false;
+$('#joinForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const c = $('#code').value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (c.length !== 6) { $('#code').focus(); $('#code').select(); return; }
+  const u = new URL(location.href); u.searchParams.set('room', c);
+  history.replaceState(null, '', u); room = c; start();
+});
+function showJoin() {
+  if (es) { es.close(); es = null; }
+  clearTimeout(helloT); state = null;
+  $('#remote').hidden = true; $('#join').hidden = false;
+  const u = new URL(location.href); u.searchParams.delete('room'); history.replaceState(null, '', u);
+  const inp = $('#code'); inp.value = room.toUpperCase(); inp.focus(); inp.select();
+}
+if (!room) $('#join').hidden = false; else start();
 
 /* ---------- remote ---------- */
 function start() {
   $('#join').hidden = true; $('#remote').hidden = false;
-  $('#room').textContent = room.toUpperCase();
+  $('#roomCode').textContent = room.toUpperCase();
   $('#total').textContent = N;
+  $('#nowN').textContent = '--'; $('#nowTitle').textContent = 'Waiting for the deck…'; $('#pips').innerHTML = ''; $('#stepline').innerHTML = '&nbsp;';
+  connect();
+  if (started) return;
+  started = true;
+  $('#room').addEventListener('click', showJoin);
   $('#slides').innerHTML = TITLES.map((t, i) => `<li><button type="button" data-s="${i}"><span class="n">${pad2(i + 1)}</span><span>${t}</span></button></li>`).join('');
   $('#slides').addEventListener('click', e => { const b = e.target.closest('button[data-s]'); if (b) { send({ a: 'go', s: +b.dataset.s, st: 0 }, +b.dataset.s, 0); window.scrollTo({ top: 0, behavior: 'smooth' }); } });
   $('#prev').addEventListener('click', () => send({ a: 'prev' }, ...step(-1)));
   $('#next').addEventListener('click', () => send({ a: 'next' }, ...step(1)));
-  connect();
   setInterval(() => { if (state && Date.now() - lastSeen > 45000) setStatus('', 'Deck quiet. Tap a button to check.'); }, 5000);
 }
 
@@ -56,7 +66,7 @@ function hello() {
   helloT = setTimeout(() => {
     if (state) return;
     tries++;
-    setStatus('bad', `No reply from the deck yet (code ${room.toUpperCase()}). Is its R panel showing this code? Retrying…`);
+    setStatus('bad', `No deck with code ${room.toUpperCase()} yet. Wrong code? Tap Change.`);
     hello();
   }, 3500);
 }
