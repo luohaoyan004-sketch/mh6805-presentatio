@@ -20,6 +20,10 @@ html = html.replace("{{SHAP_INK}}", data_uri(ROOT / "assets" / "shap_ink_plot.pn
 html = html.replace("{{SHAP_DOTS}}", data_uri(ROOT / "assets" / "shap_dots_plot.png"))
 assert "{{" not in html, "unfilled placeholder"
 
+# a complete standalone document (works on Vercel, GitHub Pages or opened from disk)
+html = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        '</head>\n<body>\n' + html + '\n</body>\n</html>\n')
 OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(html, encoding="utf8")
 print(OUT, f"{OUT.stat().st_size / 1024:.0f} KB")
