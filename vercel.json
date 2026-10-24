@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/dist/who-should-the-bank-call.html" }
+  ]
+}
