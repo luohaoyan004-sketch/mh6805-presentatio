@@ -1,0 +1,372 @@
+<title>Who Should the Bank Call?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&display=swap">
+<style>
+/*{{CSS}}*/
+.shap .ink { -webkit-mask-image: url({{SHAP_INK}}); mask-image: url({{SHAP_INK}}); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
+.shap .dots { background-image: url({{SHAP_DOTS}}); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs id="lgDefs"></defs></svg>
+
+<div class="app" id="app">
+  <div class="bg" aria-hidden="true"><div class="field fa"></div><div class="field fb"></div><div class="field fc"></div><div class="grid"></div></div>
+
+  <main class="viewport" id="viewport">
+    <div class="stage-wrap" id="stageWrap">
+      <div class="stage" id="stage">
+
+        <!-- 1 · Cover -->
+        <section class="slide s-cover" data-steps="1" data-title="Who should the bank call?" aria-label="Slide 1">
+          <div class="ring" style="width:1000px;height:1000px"></div>
+          <div class="ring" style="width:1380px;height:1380px"></div>
+          <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+          <div class="slab lg a" style="--i:0" data-bezel="56" data-refract="44" data-blur="16" data-chroma="1">
+            <p class="eyebrow">MH6805 Machine Learning · Group project</p>
+            <h1 class="cover-title">Who should the bank call?</h1>
+            <p class="cover-sub">Predicting term-deposit subscriptions from a bank's phone campaigns, with nine machine-learning models.</p>
+            <div class="cover-meta"><span class="names"><span>Li Zeyuan</span><span>Tian Shengbo</span><span>Yuan Ruoqi</span></span></div>
+          </div>
+          <p class="cover-hint a" style="--i:2"><b>→</b> next &nbsp;·&nbsp; <b>S</b> speaker notes &nbsp;·&nbsp; <b>T</b> light / dark &nbsp;·&nbsp; <b>F</b> full screen</p>
+        </section>
+
+        <!-- 2 · Accuracy trap -->
+        <section class="slide s-trap" data-steps="2" data-title="A model can be 88% accurate and still find no one" aria-label="Slide 2">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">The problem</p>
+            <h2 class="title a" style="--i:1">A model can be 88% accurate <b>and still find no one</b></h2>
+          </div>
+          <div class="waffle a" style="--i:2" id="waffle" role="img" aria-label="1,000 dots; 117 are highlighted because 11.7% of customers subscribed"></div>
+          <div class="waffle-key a" style="--i:3">
+            <span class="k"><i class="on"></i>Subscribed</span>
+            <span class="k"><i class="off"></i>Did not subscribe</span>
+            <span class="k" data-at="1"><i class="ring"></i>Missed</span>
+            <span class="tiny">Each dot ≈ 45 customers</span>
+          </div>
+          <div class="trap-side">
+            <p class="lead a" style="--i:2">Every call costs time and money. Of 45,211 customers the bank reached, only 5,289 opened a term deposit.</p>
+            <div class="stat glass a" style="--i:3">
+              <span class="label">Subscribed</span>
+              <span class="big num">11.7<span class="u">%</span></span>
+              <span class="small">5,289 of 45,211 customers</span>
+            </div>
+            <div class="trap-toggle a" style="--i:4">
+              <button class="switch" role="switch" aria-checked="false" id="trapSwitch" type="button"><span class="tr"><span class="knob lg" data-bezel="14" data-refract="12"></span></span>Predict “no” for every customer</button>
+            </div>
+            <div class="stat glass" data-at="1">
+              <div class="pair">
+                <div><span class="label">Accuracy</span><span class="big roll" id="trapAcc">0.0%</span></div>
+                <div><span class="label">Subscribers found</span><span class="big num">0</span></div>
+              </div>
+              <span class="small">High accuracy, and not a single subscriber found.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3 · Before the call -->
+        <section class="slide s-data" data-steps="2" data-title="We only use what the bank knows before dialling" aria-label="Slide 3">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">The data</p>
+            <h2 class="title a" style="--i:1">We only use what the bank knows <b>before dialling</b></h2>
+          </div>
+          <div class="facts a" style="--i:2">
+            <div class="f"><b class="num">45,211</b><span>customers · UCI Bank Marketing, Portugal</span></div>
+            <div class="f"><b class="num">16</b><span>input features</span></div>
+            <div class="f"><b class="num">0</b><span>rows removed in cleaning</span></div>
+          </div>
+          <div class="tl-line a" style="--i:3"></div>
+          <span class="tl-phase label a" style="--i:3;left:96px">Before the call</span>
+          <span class="tl-phase label a" style="--i:3;left:1000px">The call</span>
+          <span class="tl-phase label a" style="--i:3;left:1196px">After the call</span>
+          <i class="tl-tick a" style="--i:4;left:150px;height:41px"></i><i class="tl-node a" style="--i:4;left:144px"></i>
+          <i class="tl-tick a" style="--i:6;left:1236px;height:75px"></i><i class="tl-node a" style="--i:6;left:1230px"></i>
+          <div class="pre lg a" style="--i:4" data-bezel="34" data-refract="22" data-blur="10">
+            <div class="hd"><b>15 inputs known before dialling</b><span class="label">Used by all nine models</span></div>
+            <div class="chips">
+              <span class="chip">Age</span><span class="chip">Job</span><span class="chip">Marital status</span><span class="chip">Education</span><span class="chip">Credit in default</span>
+              <span class="chip">Balance</span><span class="chip">Housing loan</span><span class="chip">Personal loan</span><span class="chip">Contact method</span><span class="chip">Day of month</span>
+              <span class="chip">Month</span><span class="chip">Calls this campaign</span><span class="chip">Days since last contact</span><span class="chip">Previous contacts</span><span class="chip">Previous outcome</span>
+            </div>
+          </div>
+          <div class="callnode glass a" style="--i:5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+          <div class="post a" style="--i:6" id="post">
+            <span class="chip"><span class="strike">Call duration</span></span>
+            <p class="small" data-at="0" data-only="0">The strongest predictor in the dataset.</p>
+            <p class="small" data-at="1">Known only once the call has ended, so it cannot help choose whom to call. Excluded from every main model.</p>
+          </div>
+          <p class="foot tiny a" style="--i:7">Cleaning: pdays = −1 (“never contacted”, 36,954 records) became its own flag, and “unknown” categories were kept.</p>
+        </section>
+
+        <!-- 4 · Evaluation -->
+        <section class="slide s-eval" data-steps="2" data-title="One shared framework, four questions" aria-label="Slide 4">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Evaluation</p>
+            <h2 class="title a" style="--i:1">One shared framework, <b>four questions</b></h2>
+          </div>
+          <div class="eval-left">
+            <div class="split a" style="--i:2">
+              <span class="label">Stratified 80 / 20 split</span>
+              <div class="bar"><div class="tr">Train <b>36,168</b></div><div class="te">Test <b>9,043</b></div></div>
+              <span class="small">1,058 subscribers in the test set. The same split for all nine models.</span>
+            </div>
+            <div class="kv a" style="--i:3">
+              <div class="r"><span class="label">Tuning</span><p>Five-fold cross-validation, settings chosen by average precision</p></div>
+              <div class="r"><span class="label">Threshold</span><p>Chosen from training out-of-fold F1, never from the test set</p></div>
+            </div>
+          </div>
+          <div class="qgrid">
+            <div class="q glass" data-at="1" style="transition-delay:0ms"><span class="qn">RANKING</span><h3>Are subscribers ranked above everyone else?</h3><span class="m">Average precision · ROC AUC</span><p>Threshold-free. AP puts the weight on the rare subscribers.</p></div>
+            <div class="q glass" data-at="1" style="transition-delay:90ms"><span class="qn">DECISIONS</span><h3>Once we draw a line, are the calls good?</h3><span class="m">Precision · Recall · F1</span><p>Each model uses its own training-selected cut-off.</p></div>
+            <div class="q glass" data-at="1" style="transition-delay:180ms"><span class="qn">PROBABILITIES</span><h3>Are the predicted probabilities accurate?</h3><span class="m">Brier score</span><p>Mean squared error of the predicted probability. Lower is better.</p></div>
+            <div class="q glass" data-at="1" style="transition-delay:270ms"><span class="qn">BUDGET</span><h3>Calling the top 10% or 20%, what share of subscribers do we reach?</h3><span class="m">Capture at 10% · 20%</span><p>Share of all subscribers among the top 904 or 1,808 test customers.</p></div>
+          </div>
+        </section>
+
+        <!-- 5 · Models -->
+        <section class="slide s-models" data-steps="1" data-title="Nine models from three families" aria-label="Slide 5">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Methods</p>
+            <h2 class="title a" style="--i:1"><b>Nine models</b> from three families</h2>
+          </div>
+          <div class="fams">
+            <div class="fam glass a" style="--i:2">
+              <div class="fh"><i class="sw trad"></i><b>Traditional baselines</b></div>
+              <div class="m"><b>Logistic regression</b><span>Linear log-odds with an L2 penalty</span></div>
+              <div class="m"><b>Linear SVM</b><span>Wide-margin boundary, sigmoid-calibrated</span></div>
+              <div class="m"><b>k-nearest neighbours</b><span>75 nearest customers, distance-weighted</span></div>
+            </div>
+            <div class="fam glass a" style="--i:3">
+              <div class="fh"><i class="sw tree"></i><b>Forest and neural</b></div>
+              <div class="m"><b>Random forest</b><span>500 bootstrapped trees, averaged</span></div>
+              <div class="m"><b>MLP</b><span>Two hidden layers of 128 and 64 units</span></div>
+              <div class="m"><b>TabTransformer</b><span>Attention across the categorical fields</span></div>
+            </div>
+            <div class="fam glass a" style="--i:4">
+              <div class="fh"><i class="sw boost"></i><b>Boosting</b></div>
+              <div class="m"><b>AdaBoost</b><span>Re-weights the customers it got wrong</span></div>
+              <div class="m"><b>XGBoost</b><span>485 shallow trees, gradient-boosted</span></div>
+              <div class="m"><b>CatBoost</b><span>Handles categorical fields natively</span></div>
+            </div>
+          </div>
+          <p class="fam-strip a" style="--i:5">Same split, same five folds, same metrics. Call duration excluded throughout.</p>
+        </section>
+
+        <!-- 6 · Results -->
+        <section class="slide s-results" data-steps="5" data-title="The winner changes with the question" aria-label="Slide 6">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Results on 9,043 test customers</p>
+            <h2 class="title a" style="--i:1">The winner <b>changes with the question</b></h2>
+          </div>
+          <div class="seg a" style="--i:2" id="metricSeg" role="group" aria-label="Metric">
+            <span class="thumb lg" data-bezel="14" data-refract="5" data-mag="0.045"></span>
+            <button type="button" aria-pressed="true">Avg precision</button>
+            <button type="button" aria-pressed="false">F1</button>
+            <button type="button" aria-pressed="false">Recall</button>
+            <button type="button" aria-pressed="false">Precision</button>
+            <button type="button" aria-pressed="false">Top-20% capture</button>
+          </div>
+          <div class="bars a" style="--i:3" id="bars"><span class="base"></span></div>
+          <div class="legend a" style="--i:4">
+            <span><i class="sw trad"></i>Traditional baselines</span><span><i class="sw tree"></i>Forest and neural</span><span><i class="sw boost"></i>Boosting</span>
+            <span class="tiny">Bars start at zero · thresholds chosen on training data</span>
+          </div>
+          <div class="insight glass a" style="--i:4" id="insight">
+            <div class="swap"><span class="label" id="insEyebrow">Average precision · ranking</span></div>
+            <h3 class="swap" id="insHead">XGBoost ranks subscribers best</h3>
+            <p class="swap" id="insBody"></p>
+            <div class="kn"><span class="big roll" id="insNum">0.4716</span><span class="small" id="insWho">XGBoost</span></div>
+          </div>
+          <div class="tip" id="barTip"></div>
+        </section>
+
+        <!-- 7 · Neural vs forest -->
+        <section class="slide s-nn" data-steps="2" data-title="Neural networks beat the baselines, not the forest" aria-label="Slide 7">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Results</p>
+            <h2 class="title a" style="--i:1">Neural networks beat the baselines, <b>not the forest</b></h2>
+          </div>
+          <div class="ap-plot a" style="--i:2" id="apPlot"></div>
+          <div class="ci-card glass" data-at="1">
+            <span class="label">Paired bootstrap · 95% interval</span>
+            <p class="cap">Difference in test average precision. Left of zero: the first model is worse.</p>
+            <div id="ciPlot"></div>
+          </div>
+          <p class="nn-note small" data-at="1" style="transition-delay:150ms">1,000 stratified resamples of the saved test predictions. Each neural model had 4 tuning candidates; random forest had 18, so this compares these settings, not neural networks in general.</p>
+        </section>
+
+        <!-- 8 · Budget -->
+        <section class="slide s-budget" data-steps="4" data-title="Call 10% of customers, reach 45% of subscribers" aria-label="Slide 8">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">What it means for the bank</p>
+            <h2 class="title a" style="--i:1">Call 10% of customers, <b>reach 45% of subscribers</b></h2>
+          </div>
+          <div class="field1058 a" style="--i:2" id="field" role="img" aria-label="1,058 dots, one per subscriber in the test set"></div>
+          <p class="field-cap small a" style="--i:3">Each dot is one of the 1,058 subscribers among 9,043 test customers.</p>
+          <div class="budget glass a" style="--i:3">
+            <div class="seg" id="budgetSeg" role="group" aria-label="Calling budget">
+              <span class="thumb lg" data-bezel="14" data-refract="5" data-mag="0.045"></span>
+              <button type="button" aria-pressed="true">Top 10%</button>
+              <button type="button" aria-pressed="false">Top 20%</button>
+            </div>
+            <div class="calls"><b class="roll" id="callsN">904</b> calls out of 9,043 customers</div>
+            <div class="line">
+              <div class="hd"><i class="r"></i>Calling at random</div>
+              <span class="big roll dim" id="randN">–</span>
+              <span class="sub" id="randSub">&nbsp;</span>
+            </div>
+            <div class="line">
+              <div class="hd"><i class="m"></i>Calling down the XGBoost ranking</div>
+              <span class="big roll dim" id="modelN">–</span>
+              <span class="sub" id="modelSub">&nbsp;</span>
+            </div>
+          </div>
+          <p class="cap-note tiny a" style="--i:4">Capture is the share of all subscribers who appear on the call list, not the share of called customers who say yes.</p>
+        </section>
+
+        <!-- 9 · SHAP -->
+        <section class="slide s-shap" data-steps="4" data-title="What XGBoost has learned to look for" aria-label="Slide 9">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Interpretation</p>
+            <h2 class="title a" style="--i:1">What XGBoost <b>has learned to look for</b></h2>
+          </div>
+          <div class="shap a" style="--i:2" role="img" aria-label="SHAP summary plot for XGBoost without call duration, top 15 features">
+            <ol class="feat" id="feat"></ol>
+            <div class="plot base"><div class="ink"></div><div class="dots"></div></div>
+            <div class="plot band" id="band"><div class="ink"></div><div class="dots"></div></div>
+            <div class="lens lg" id="lens" data-bezel="18" data-refract="9" data-mag="0.05"></div>
+          </div>
+          <div class="find">
+            <p class="guide a" style="--i:3">Each point is one test customer. <b class="hi">Red</b> is a high feature value, <b class="lo">blue</b> a low one. Points right of zero push the model towards “subscribes”.</p>
+            <div class="fi glass" data-at="1"><span class="no">01</span><b>Previous campaign succeeded</b><span class="d">The strongest push towards “yes”.</span></div>
+            <div class="fi glass" data-at="2"><span class="no">02</span><b>Contact method unknown</b><span class="d">Pushes the prediction towards “no”.</span></div>
+            <div class="fi glass" data-at="3"><span class="no">03</span><b>Called many times this campaign</b><span class="d">More calls so far, lower predicted chance.</span></div>
+          </div>
+          <p class="shap-caveat small" data-at="3" style="transition-delay:200ms">These are associations, not causes. Less interested customers may simply receive more calls.</p>
+        </section>
+
+        <!-- 10 · Duration -->
+        <section class="slide s-duration" data-steps="3" data-title="Call duration would help, but it arrives too late" aria-label="Slide 10">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">A tempting shortcut</p>
+            <h2 class="title a" style="--i:1">Call duration would help, <b>but it arrives too late</b></h2>
+          </div>
+          <button class="switch a" style="--i:2" role="switch" aria-checked="false" id="durSwitch" type="button"><span class="tr"><span class="knob lg" data-bezel="14" data-refract="12"></span></span>Include call duration</button>
+          <div class="tiles" id="durTiles">
+            <div class="tile glass a" style="--i:3"><span class="label">Average precision</span><span class="big roll" data-k="ap">0.4716</span><span class="mb"><i></i></span><span class="delta" data-d="ap">&nbsp;</span></div>
+            <div class="tile glass a" style="--i:4"><span class="label">ROC AUC</span><span class="big roll" data-k="roc">0.8077</span><span class="mb"><i></i></span><span class="delta" data-d="roc">&nbsp;</span></div>
+            <div class="tile glass a" style="--i:5"><span class="label">Top-10% capture</span><span class="big roll" data-k="c10">44.90%</span><span class="mb"><i></i></span><span class="delta" data-d="c10">&nbsp;</span></div>
+            <div class="tile glass a" style="--i:6"><span class="label">Top-20% capture</span><span class="big roll" data-k="c20">62.57%</span><span class="mb"><i></i></span><span class="delta" data-d="c20">&nbsp;</span></div>
+          </div>
+          <div class="verdict glass solid" data-at="2">
+            <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+            <div><h3>Known only after the call ends</h3><p>It cannot tell the bank whom to call, so it stays out of every main model. Every result in this talk excludes it.</p></div>
+          </div>
+          <p class="dur-note tiny a" style="--i:7">XGBoost refitted with the same split and settings. Thresholds were chosen separately, so only threshold-free measures are shown.</p>
+        </section>
+
+        <!-- 11 · Recommendation -->
+        <section class="slide s-rec" data-steps="1" data-title="Take XGBoost forward, and let the budget decide" aria-label="Slide 11">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Recommendation</p>
+            <h2 class="title a" style="--i:1"><b>Take XGBoost forward</b>, and let the budget decide</h2>
+          </div>
+          <div class="recs">
+            <div class="rec glass lead-pick a" style="--i:2"><span class="when">Default choice</span><span class="who"><i class="sw boost"></i>XGBoost</span>
+              <ul><li>Average precision<b>0.4716</b></li><li>Top-10% capture<b>44.90%</b></li><li>ROC AUC<b>0.8077</b></li></ul></div>
+            <div class="rec glass a" style="--i:3"><span class="when">If the bank calls 20%</span><span class="who"><i class="sw boost"></i>CatBoost</span>
+              <ul><li>F1<b>0.5022</b></li><li>Top-20% capture<b>63.42%</b></li><li>Average precision<b>0.4606</b></li></ul></div>
+            <div class="rec glass a" style="--i:4"><span class="when">If missing a subscriber is costly</span><span class="who"><i class="sw tree"></i>Random forest</span>
+              <ul><li>Recall<b>0.5520</b></li><li>Subscribers found<b>584</b></li><li>Wasted calls<b>729</b></li></ul></div>
+          </div>
+          <div class="rules">
+            <div class="rule a" style="--i:5"><span class="k">Fixed capacity</span><p>Call down a ranked list instead of using one probability cut-off.</p></div>
+            <div class="rule a" style="--i:6"><span class="k">Profit</span><p>Build the rule from call cost and deposit value. F1 ignores both.</p></div>
+          </div>
+        </section>
+
+        <!-- 12 · Limits -->
+        <section class="slide s-lim" data-steps="1" data-title="What this evaluation can't tell us yet" aria-label="Slide 12">
+          <div class="pad">
+            <p class="eyebrow a" style="--i:0">Limitations</p>
+            <h2 class="title a" style="--i:1">What this evaluation <b>can't tell us yet</b></h2>
+          </div>
+          <div class="lims">
+            <div class="lim a" style="--i:2"><b>One dataset, one split</b><p>Earlier project versions had already looked at the test set.</p></div>
+            <div class="lim a" style="--i:3"><b>Uneven tuning</b><p>18 forest settings, 4 per neural model, 10 per boosting model. One seed.</p></div>
+            <div class="lim a" style="--i:4"><b>A close call at the top</b><p>The XGBoost vs CatBoost bootstrap interval reaches zero, so the gap is not decisive.</p></div>
+            <div class="lim a" style="--i:5"><b>Prediction is not cause</b><p>Capture counts subscribers on a list, not subscriptions that a call creates.</p></div>
+          </div>
+          <div class="nextcard glass a" style="--i:4">
+            <span class="label">Next step</span>
+            <h3>Test the shortlist on a fresh, later campaign</h3>
+            <ul>
+              <li>Equalise tuning budgets and repeat across seeds</li>
+              <li>Check probability calibration</li>
+              <li>Set the contact rule from the bank's capacity and costs</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- 13 · Close -->
+        <section class="slide s-cover s-close" data-steps="1" data-title="Thank you" aria-label="Slide 13">
+          <div class="ring" style="width:1000px;height:1000px"></div>
+          <div class="ring" style="width:1380px;height:1380px"></div>
+          <div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+          <div class="slab lg a" style="--i:0" data-bezel="56" data-refract="44" data-blur="16" data-chroma="1">
+            <p class="eyebrow">In one sentence</p>
+            <h2 class="cover-title">Thank you</h2>
+            <div class="take">
+              <span>The best model depends on <b>the bank's goal</b>.</span>
+              <span>Ranked well, <b>10% of the calls reach 45% of subscribers</b>.</span>
+            </div>
+            <div class="cover-meta"><span>Questions welcome</span><span class="names"><span>Li Zeyuan</span><span>Tian Shengbo</span><span>Yuan Ruoqi</span></span></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <nav class="dock glass" id="dock" aria-label="Presentation controls">
+    <button type="button" id="bPrev" aria-label="Previous"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <span class="count" id="count">01 / 13</span>
+    <span class="pips" id="pips"></span>
+    <button type="button" id="bNext" aria-label="Next"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+    <span class="sep"></span>
+    <button type="button" id="bNotes" aria-label="Speaker notes (S)" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 11h16M4 16h10"/></svg></button>
+    <button type="button" id="bTheme" aria-label="Light or dark (T)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/></svg></button>
+    <button type="button" id="bFull" aria-label="Full screen (F)"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  </nav>
+
+  <aside class="notes glass" id="notes" aria-label="Speaker notes">
+    <header>
+      <div class="row"><button class="timer" id="timer" type="button" title="Click to reset">00:00</button><span class="meta" id="tTarget">TARGET 10:00</span></div>
+      <div class="bar"><i id="tBar"></i></div>
+      <div class="row"><span class="meta" id="nSlide">SLIDE 01 / 13</span><span class="meta" id="nPace">THIS SLIDE 0:00 / 0:20</span></div>
+      <h2 id="nTitle"></h2>
+    </header>
+    <div class="body" id="nBody"></div>
+    <footer><span class="next" id="nNext"></span><button class="linkbtn" id="popOut" type="button">Open in new window</button></footer>
+  </aside>
+
+  <div class="help" id="help" hidden>
+    <div class="card glass">
+      <h2>Keyboard</h2>
+      <dl>
+        <dt>→ Space</dt><dd>Next step or slide</dd>
+        <dt>←</dt><dd>Back</dd>
+        <dt>S</dt><dd>Speaker notes and timer</dd>
+        <dt>T</dt><dd>Light or dark</dd>
+        <dt>F</dt><dd>Full screen</dd>
+        <dt>Home End</dt><dd>First or last slide</dd>
+        <dt>?</dt><dd>Show or hide this card</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+/*{{JS}}*/
+</script>
