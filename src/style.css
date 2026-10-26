@@ -269,22 +269,22 @@ button { font: inherit; color: inherit; }
 }
 
 /* ---------- phone remote pairing ---------- */
-.pair { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: color-mix(in oklab, var(--bg) 45%, transparent); padding: 16px; }
-.pair .card { --r: 28px; width: min(560px, 100%); padding: 26px 28px 24px; background: var(--glass-solid); display: grid; gap: 14px; }
-.pair .row { display: flex; justify-content: space-between; align-items: center; }
-.pair h2 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
-.pair .x { border: 0; background: var(--track); width: 34px; height: 34px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; color: var(--ink-2); }
-.pair .x:focus-visible, .pair .linkbtn:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; }
+.pairing { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: color-mix(in oklab, var(--bg) 45%, transparent); padding: 16px; }
+.pairing .card { --r: 28px; width: min(560px, 100%); padding: 26px 28px 24px; background: var(--glass-solid); display: grid; gap: 14px; }
+.pairing .row { display: flex; justify-content: space-between; align-items: center; }
+.pairing h2 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
+.pairing .x { border: 0; background: var(--track); width: 34px; height: 34px; border-radius: 50%; font-size: 20px; line-height: 1; cursor: pointer; color: var(--ink-2); }
+.pairing .x:focus-visible, .pairing .linkbtn:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; }
 .pair-body { display: grid; grid-template-columns: auto 1fr; gap: 22px; align-items: center; }
-.pair .qr { width: 188px; height: 188px; padding: 10px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 1px var(--hair); display: grid; place-items: center; }
-.pair .qr img, .pair .qr canvas { width: 168px !important; height: 168px !important; }
-.pair .qr.none { display: none; }
+.pairing .qr { width: 188px; height: 188px; padding: 10px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 1px var(--hair); display: grid; place-items: center; }
+.pairing .qr img, .pairing .qr canvas { width: 168px !important; height: 168px !important; }
+.pairing .qr.none { display: none; }
 .pair-info { display: grid; gap: 4px; min-width: 0; }
-.pair .code { font-family: var(--f-mono); font-size: 40px; font-weight: 600; letter-spacing: .12em; margin-bottom: 8px; }
-.pair .url { font-family: var(--f-mono); font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; margin-bottom: 10px; }
-.pair .status { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-2); }
-.pair .status i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); flex: none; }
-.pair .status.ok i { background: var(--c-boost); box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-boost) 22%, transparent); }
-.pair .status.bad i { background: var(--c-tree); }
-.pair .linkbtn { justify-self: start; border: 0; background: var(--track); box-shadow: inset 0 0 0 1px var(--hair); border-radius: 999px; padding: 7px 14px; font-size: 13.5px; cursor: pointer; color: var(--ink-2); }
+.pairing .code { font-family: var(--f-mono); font-size: 40px; font-weight: 600; letter-spacing: .12em; margin-bottom: 8px; }
+.pairing .url { font-family: var(--f-mono); font-size: 14px; color: var(--ink-2); overflow-wrap: anywhere; margin-bottom: 10px; }
+.pairing .status { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--ink-2); }
+.pairing .status i { width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); flex: none; }
+.pairing .status.ok i { background: var(--c-boost); box-shadow: 0 0 0 4px color-mix(in oklab, var(--c-boost) 22%, transparent); }
+.pairing .status.bad i { background: var(--c-tree); }
+.pairing .linkbtn { justify-self: start; border: 0; background: var(--track); box-shadow: inset 0 0 0 1px var(--hair); border-radius: 999px; padding: 7px 14px; font-size: 13.5px; cursor: pointer; color: var(--ink-2); }
 @media (max-width: 520px) { .pair-body { grid-template-columns: 1fr; } }

@@ -32,10 +32,10 @@
 .waffle-key .k i.on { background: var(--dot-on); } .waffle-key .k i.off { background: var(--dot-off); }
 .waffle-key .k i.ring { box-shadow: inset 0 0 0 1.6px var(--ink-3); }
 .trap-side { position: absolute; left: 950px; top: 262px; width: 554px; display: grid; gap: 22px; }
-.stat { --r: 26px; padding: 24px 28px 26px; display: grid; gap: 4px; }
+.stat { --r: 26px; padding: 24px 28px 26px; display: grid; gap: 8px; }
 .stat .big { font-size: 76px; font-weight: 500; letter-spacing: -.04em; line-height: 1.05; }
 .stat .pair { display: grid; grid-template-columns: auto 1fr; column-gap: 64px; }
-.stat .pair > div { display: grid; gap: 4px; }
+.stat .pair > div { display: grid; gap: 8px; }
 .stat .pair .big.bad { color: var(--ink); }
 .trap-toggle { padding: 4px 4px 2px; }
 
